@@ -19,6 +19,14 @@
 ]]></content>
   </entry>
   <entry>
+    <title>rabbitmq</title>
+    <url>/2021/02/27/rabbitmq/</url>
+    <content><![CDATA[<h3 id="rabbitmq生产者"><a href="#rabbitmq生产者" class="headerlink" title="rabbitmq生产者"></a>rabbitmq生产者</h3><h3 id="rabbitmq消费者"><a href="#rabbitmq消费者" class="headerlink" title="rabbitmq消费者"></a>rabbitmq消费者</h3><h3 id="rabbitmq交换机的类型"><a href="#rabbitmq交换机的类型" class="headerlink" title="rabbitmq交换机的类型"></a>rabbitmq交换机的类型</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">direct</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">fanout</span><br></pre></td></tr></table></figure>
+]]></content>
+  </entry>
+  <entry>
     <title>my gallery</title>
     <url>/2021/02/27/my-gallery/</url>
     <content><![CDATA[<br>
@@ -35,11 +43,5 @@
         <tag>PS3</tag>
         <tag>Games</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>我的一个hexo</title>
-    <url>/2021/02/27/%E6%88%91%E7%9A%84%E4%B8%80%E4%B8%AAhexo/</url>
-    <content><![CDATA[<h2 id="每周分享"><a href="#每周分享" class="headerlink" title="每周分享"></a>每周分享</h2><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">关于php的问题</span><br></pre></td></tr></table></figure>
-]]></content>
   </entry>
 </search>

@@ -1178,7 +1178,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #fef2ff;
+  background: #09edac;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2279,16 +2279,16 @@ embed {
   margin: 0 auto 25px auto;
 }
 .content-wrap {
-  opacity: 1;
+  opacity: 1.5;
 }
 .sidebar {
-  opacity: 1;
+  opacity: 1.5;
 }
 .header-inner {
   background: #fff;
 }
 .popup {
-  opacity: 1;
+  opacity: 1.5;
 }
 body {
   background: url("http://i2.tiimg.com/733802/413c445fcaca5ebb.jpg");
