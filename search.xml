@@ -21,9 +21,37 @@
   <entry>
     <title>rabbitmq</title>
     <url>/2021/02/27/rabbitmq/</url>
-    <content><![CDATA[<h3 id="rabbitmq生产者"><a href="#rabbitmq生产者" class="headerlink" title="rabbitmq生产者"></a>rabbitmq生产者</h3><h3 id="rabbitmq消费者"><a href="#rabbitmq消费者" class="headerlink" title="rabbitmq消费者"></a>rabbitmq消费者</h3><h3 id="rabbitmq交换机的类型"><a href="#rabbitmq交换机的类型" class="headerlink" title="rabbitmq交换机的类型"></a>rabbitmq交换机的类型</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">direct</span><br></pre></td></tr></table></figure>
+    <content><![CDATA[<h3 id="主题交换机"><a href="#主题交换机" class="headerlink" title="主题交换机"></a>主题交换机</h3><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">    发送到主题交换机（topic exchange）的消息不可以携带随意什么样子的路由键（routing_key），</span><br><span class="line">它的路由键必须是一个由.分隔开的词语列表。</span><br></pre></td></tr></table></figure>
 
-<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">fanout</span><br></pre></td></tr></table></figure>
+<hr>
+<ul>
+<li><p> (*星号)用来表示一个单词。</p>
+</li>
+<li><p>（#号）用来表示任意数量（零个和多个）单词。</p>
+</li>
+</ul>
+<p>下边用图说明：<br>    <img src="http://www.rabbitmq.com/img/tutorials/python-five.png" alt="image"></p>
+<pre><code><figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">这个例子里，我们发送的所有消息都是用来描述小动物的。发送的消息所携带的路由键是由三个单词所组成的，这三个单词被两个.分割开。路由键里的第一个单词描述的是动物的速度，第二个单词是动物的颜色，第三个是动物的种类。所以它看起来是这样的： &lt;celerity&gt;.&lt;colour&gt;.&lt;species&gt;。</span><br><span class="line">我们创建了三个绑定：Q1的绑定键为 *.orange.*，Q2的绑定键为 *.*.rabbit 和 lazy.# 。</span><br><span class="line"></span><br><span class="line">这三个绑定键被可以总结为：</span><br><span class="line"></span><br><span class="line">    -  Q1 对所有的桔黄色动物都感兴趣。</span><br><span class="line">    </span><br><span class="line">    -  Q2 则是对所有的兔子和所有懒惰的动物感兴趣。</span><br></pre></td></tr></table></figure>
+</code></pre>
+<hr>
+<p>publish_topic.php</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line"></span><br><span class="line">require_once __DIR__ . &#39;&#x2F;vendor&#x2F;autoload.php&#39;;</span><br><span class="line">use PhpAmqpLib\Connection\AMQPStreamConnection;</span><br><span class="line">use PhpAmqpLib\Message\AMQPMessage;</span><br><span class="line"></span><br><span class="line">$connection &#x3D; new AMQPStreamConnection(&#39;localhost&#39;, 5672, &#39;guest&#39;, &#39;guest&#39;);</span><br><span class="line">$channel &#x3D; $connection-&gt;channel();</span><br><span class="line"></span><br><span class="line">$channel-&gt;exchange_declare(&#39;topic_logs&#39;, &#39;topic&#39;, false, false, false);</span><br><span class="line"></span><br><span class="line">$routing_key &#x3D; isset($argv[1]) &amp;&amp; !empty($argv[1]) ? $argv[1] : &#39;anonymous.info&#39;;</span><br><span class="line">$data &#x3D; implode(&#39; &#39;, array_slice($argv, 2));</span><br><span class="line">if(empty($data)) $data &#x3D; &quot;Hello World!&quot;;</span><br><span class="line"></span><br><span class="line">$msg &#x3D; new AMQPMessage($data);</span><br><span class="line"></span><br><span class="line">$channel-&gt;basic_publish($msg, &#39;topic_logs&#39;, $routing_key);</span><br><span class="line"></span><br><span class="line">echo &quot; [x] Sent &quot;,$routing_key,&#39;:&#39;,$data,&quot; \n&quot;;</span><br><span class="line"></span><br><span class="line">$channel-&gt;close();</span><br><span class="line">$connection-&gt;close();</span><br><span class="line"></span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>receive_topic.php</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line"></span><br><span class="line">require_once __DIR__ . &#39;&#x2F;vendor&#x2F;autoload.php&#39;;</span><br><span class="line">use PhpAmqpLib\Connection\AMQPStreamConnection;</span><br><span class="line"></span><br><span class="line">$connection &#x3D; new AMQPStreamConnection(&#39;localhost&#39;, 5672, &#39;guest&#39;, &#39;guest&#39;);</span><br><span class="line">$channel &#x3D; $connection-&gt;channel();</span><br><span class="line"></span><br><span class="line">$channel-&gt;exchange_declare(&#39;topic_logs&#39;, &#39;topic&#39;, false, false, false);</span><br><span class="line"></span><br><span class="line">list($queue_name, ,) &#x3D; $channel-&gt;queue_declare(&quot;&quot;, false, false, true, false);</span><br><span class="line"></span><br><span class="line">$binding_keys &#x3D; array_slice($argv, 1);</span><br><span class="line">if( empty($binding_keys )) &#123;</span><br><span class="line">    file_put_contents(&#39;php:&#x2F;&#x2F;stderr&#39;, &quot;Usage: $argv[0] [binding_key]\n&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foreach($binding_keys as $binding_key) &#123;</span><br><span class="line">    $channel-&gt;queue_bind($queue_name, &#39;topic_logs&#39;, $binding_key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">echo &#39; [*] Waiting for logs. To exit press CTRL+C&#39;, &quot;\n&quot;;</span><br><span class="line"></span><br><span class="line">$callback &#x3D; function($msg)&#123;</span><br><span class="line">  echo &#39; [x] &#39;,$msg-&gt;delivery_info[&#39;routing_key&#39;], &#39;:&#39;, $msg-&gt;body, &quot;\n&quot;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">$channel-&gt;basic_consume($queue_name, &#39;&#39;, false, true, false, false, $callback);</span><br><span class="line"></span><br><span class="line">while(count($channel-&gt;callbacks)) &#123;</span><br><span class="line">    $channel-&gt;wait();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">$channel-&gt;close();</span><br><span class="line">$connection-&gt;close();</span><br><span class="line"></span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>执行下边命令接受所有日志：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">php receive_topic.php &quot;#&quot;</span><br></pre></td></tr></table></figure>
+
+<p>执行下边命令接受来自 “kern” 设备的日志：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">php receive_topic.php &quot;kern.*&quot;</span><br></pre></td></tr></table></figure>
+<p>执行下边命令 只接收严重程度为”critical“的日志：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">php receive_logs_topic.php &quot;*.critical&quot;</span><br></pre></td></tr></table></figure>
+
+<p>执行下边命令 发送路由键为 “kern.critical” 的日志：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">php publish_topic.php &quot;kern.critical&quot; &quot;A critical kernel error&quot;</span><br></pre></td></tr></table></figure>
+
+
 ]]></content>
   </entry>
   <entry>
